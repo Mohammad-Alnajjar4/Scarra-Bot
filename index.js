@@ -14,10 +14,7 @@ const client = new Client({
 });
 
 // Create the player instance
-const player = new Player(client);
 
-// Load default extractors (handles YouTube, Spotify, etc.)
-player.extractors.loadMulti(DefaultExtractors);
 
 // This event sends a message when a new song starts playing
 player.events.on('playerStart', (queue, track) => {
@@ -26,8 +23,12 @@ player.events.on('playerStart', (queue, track) => {
 
 const PREFIX = '!';
 
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log(`${client.user.tag} is online and ready!`);
+    
+    // This securely loads YouTube, Spotify, and SoundCloud extractors
+    await player.extractors.loadDefault();
+    console.log('Music extractors loaded successfully!');
 });
 
 client.on('messageCreate', async (message) => {
