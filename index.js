@@ -2,7 +2,13 @@ require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const axios = require('axios');
 const { Player } = require('discord-player');
-// Notice: We removed the DefaultExtractors line here because we don't need it anymore!
+// Explicitly import the individual extractors
+const { 
+    SpotifyExtractor, 
+    SoundCloudExtractor, 
+    AppleMusicExtractor, 
+    AttachmentExtractor 
+} = require('@discord-player/extractor');
 
 const client = new Client({
     intents: [
@@ -26,9 +32,12 @@ const PREFIX = '!';
 client.on('ready', async () => {
     console.log(`${client.user.tag} is online and ready!`);
     
-    // Safely load all default music extractors internally
+    // Manually register each extractor to guarantee they load successfully
     try {
-        await player.extractors.loadDefault(); // This is the fix right here!
+        await player.extractors.register(SpotifyExtractor, {});
+        await player.extractors.register(SoundCloudExtractor, {});
+        await player.extractors.register(AppleMusicExtractor, {});
+        await player.extractors.register(AttachmentExtractor, {});
         console.log('Music extractors loaded successfully!');
     } catch (error) {
         console.error('Error loading extractors:', error);
