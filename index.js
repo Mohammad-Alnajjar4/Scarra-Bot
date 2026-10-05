@@ -2,6 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const axios = require('axios');
 const { Player } = require('discord-player');
+const { DefaultExtractors } = require('@discord-player/extractor');
 
 const client = new Client({
     intents: [
@@ -25,9 +26,9 @@ const PREFIX = '!';
 client.on('ready', async () => {
     console.log(`${client.user.tag} is online and ready!`);
     
-    // Safely load music extractors on startup
+    // Safely load music extractors on startup using the V7 method
     try {
-        await player.extractors.loadDefault();
+        await player.extractors.loadMulti(DefaultExtractors);
         console.log('Music extractors loaded successfully!');
     } catch (error) {
         console.error('Error loading extractors:', error);
