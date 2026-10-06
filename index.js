@@ -2,6 +2,7 @@ require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
 const axios = require('axios');
 const { Player } = require('discord-player');
+const ffmpeg = require('ffmpeg-static');
 // Explicitly import the individual extractors
 const { 
     SpotifyExtractor, 
@@ -19,8 +20,10 @@ const client = new Client({
     ]
 });
 
-// Initialize the player instance
+// Initialize the player instance with ffmpeg path forced
 const player = new Player(client);
+player.extractors.defaultPlatform = 'auto';
+process.env.FFMPEG_PATH = ffmpeg;
 
 // Listen to player events
 player.events.on('playerStart', (queue, track) => {
