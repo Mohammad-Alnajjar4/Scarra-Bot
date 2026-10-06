@@ -97,7 +97,6 @@ client.on('messageCreate', async (message) => {
         if (!voiceChannel) return message.reply('You need to be in a voice channel to play music!');
 
         const query = args.join(' ');
-        
         try {
             message.react('🔍');
             
@@ -110,12 +109,15 @@ client.on('messageCreate', async (message) => {
                 return message.reply('No songs found for that search!');
             }
 
-            // Play the first track found
+            // Play the track and FORCE it to stay in the channel
             await player.play(voiceChannel, searchResult, {
                 nodeOptions: {
                     metadata: {
                         channel: message.channel
-                    }
+                    },
+                    leaveOnEmpty: false, // Prevents leaving when the voice channel is empty
+                    leaveOnEnd: false,   // Prevents leaving immediately when a song ends
+                    leaveOnStop: false   // Prevents leaving abruptly on stop commands
                 }
             });
         } catch (error) {
