@@ -4,7 +4,7 @@ const axios = require('axios');
 const { Player } = require('discord-player');
 const ffmpeg = require('ffmpeg-static');
 const libsodium = require('libsodium-wrappers');
-// Explicitly import the individual extractors
+const { YoutubeExtractor } = require('discord-player-youtubei');
 const { 
     SpotifyExtractor, 
     SoundCloudExtractor, 
@@ -21,11 +21,9 @@ const client = new Client({
     ]
 });
 
-// Initialize the player instance with ffmpeg path forced
+// Initialize the player instance and link ffmpeg-static correctly
 const player = new Player(client);
-player.extractors.defaultPlatform = 'auto';
-process.env.FFMPEG_PATH = ffmpeg;
-player.options.ytdlOptions = { quality: 'highestaudio', highWaterMark: 1 << 25 };
+process.env.FFMPEG_PATH = ffmpeg.path;
 
 // Listen to player events
 player.events.on('playerStart', (queue, track) => {
@@ -45,13 +43,14 @@ const PREFIX = '!';
 client.on('ready', async () => {
     console.log(`${client.user.tag} is online and ready!`);
     
-    // Manually register each extractor to guarantee they load successfully
+    // Manually register YouTube and other extractors
     try {
+        await player.extractors.register(YoutubeExtractor, {});
         await player.extractors.register(SpotifyExtractor, {});
         await player.extractors.register(SoundCloudExtractor, {});
         await player.extractors.register(AppleMusicExtractor, {});
         await player.extractors.register(AttachmentExtractor, {});
-        console.log('Music extractors loaded successfully!');
+        console.log('All music extractors loaded successfully!');
     } catch (error) {
         console.error('Error loading extractors:', error);
     }
@@ -70,7 +69,7 @@ client.on('messageCreate', async (message) => {
         if (!args.length) return message.reply('Please provide a search term! (e.g., !gif cat)');
         
         const searchTerm = args.join(' ');
-        const GIPHY_API_KEY = '8hpqCAh19IOYo4NbHfTJ14joC6D5pq3A';
+        const GIPHY_API_KEY = process.env.GIPHY_API_KEY || '8hpqCAh19IOYo4NbHfTJ14joC6D5pq3A';
         
         try {
             const url = `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${searchTerm}&limit=1`;
@@ -100,7 +99,6 @@ client.on('messageCreate', async (message) => {
         try {
             message.react('🔍');
             
-            // Search for the track using the registered extractors first
             const searchResult = await player.search(query, {
                 requestedBy: message.author
             });
@@ -109,15 +107,14 @@ client.on('messageCreate', async (message) => {
                 return message.reply('No songs found for that search!');
             }
 
-            // Play the track and FORCE it to stay in the channel
             await player.play(voiceChannel, searchResult, {
                 nodeOptions: {
                     metadata: {
                         channel: message.channel
                     },
-                    leaveOnEmpty: false, // Prevents leaving when the voice channel is empty
-                    leaveOnEnd: false,   // Prevents leaving immediately when a song ends
-                    leaveOnStop: false   // Prevents leaving abruptly on stop commands
+                    leaveOnEmpty: false,
+                    leaveOnEnd: false,
+                    leaveOnStop: false
                 }
             });
         } catch (error) {
