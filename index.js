@@ -30,6 +30,14 @@ player.events.on('playerStart', (queue, track) => {
     queue.metadata.channel.send(`🎶 Now playing: **${track.title}**`);
 });
 
+player.events.on('error', (queue, error) => {
+    console.log(`[Player Error]`, error);
+});
+
+player.events.on('playerError', (queue, error, track) => {
+    console.log(`[Track Error] Track ${track.title}:`, error);
+});
+
 const PREFIX = '!';
 
 client.on('ready', async () => {
