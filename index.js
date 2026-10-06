@@ -3,6 +3,7 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const axios = require('axios');
 const { Player } = require('discord-player');
 const ffmpeg = require('ffmpeg-static');
+const libsodium = require('libsodium-wrappers');
 // Explicitly import the individual extractors
 const { 
     SpotifyExtractor, 
@@ -24,6 +25,7 @@ const client = new Client({
 const player = new Player(client);
 player.extractors.defaultPlatform = 'auto';
 process.env.FFMPEG_PATH = ffmpeg;
+player.options.ytdlOptions = { quality: 'highestaudio', highWaterMark: 1 << 25 };
 
 // Listen to player events
 player.events.on('playerStart', (queue, track) => {
