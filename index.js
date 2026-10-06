@@ -87,7 +87,18 @@ client.on('messageCreate', async (message) => {
         
         try {
             message.react('🔍');
-            await player.play(voiceChannel, query, {
+            
+            // Search for the track using the registered extractors first
+            const searchResult = await player.search(query, {
+                requestedBy: message.author
+            });
+
+            if (!searchResult || !searchResult.tracks.length) {
+                return message.reply('No songs found for that search!');
+            }
+
+            // Play the first track found
+            await player.play(voiceChannel, searchResult, {
                 nodeOptions: {
                     metadata: {
                         channel: message.channel
